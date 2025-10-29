@@ -3454,7 +3454,42 @@ void fill_default_txdesc(struct xmit_frame *pxmitframe, u8 *pbuf)
 	desc_size = rtl8733b_get_tx_desc_size(adapter);
 	_rtw_memset(pbuf, 0, desc_size);
 
-	if (pxmitframe->frame_tag == DATA_FRAMETAG) {
+	if (pattrib->inject == 0xa5) {
+		SET_TX_DESC_MACID_8733B(pbuf, pattrib->mac_id);
+		SET_TX_DESC_RATE_ID_8733B(pbuf, pattrib->raid);
+		SET_TX_DESC_QSEL_8733B(pbuf, pattrib->qsel);
+		SET_TX_DESC_SW_SEQ_8733B(pbuf, pattrib->seqnum);
+
+		SET_TX_DESC_EN_HWSEQ_8733B(pbuf, 0); 
+		SET_TX_DESC_SW_SEQ_8733B(pbuf, pattrib->seqnum); 
+
+		SET_TX_DESC_RTY_LMT_EN_8733B(pbuf, 1);
+
+		if (pattrib->retry_ctrl == _TRUE) {
+			SET_TX_DESC_RTS_DATA_RTY_LMT_8733B(pbuf, 6); 
+		} else {
+			SET_TX_DESC_RTS_DATA_RTY_LMT_8733B(pbuf, 0);
+		}
+		if (pattrib->sgi == _TRUE) {
+			SET_TX_DESC_DATA_SHORT_8733B(pbuf, 1);
+		} else {
+			SET_TX_DESC_DATA_SHORT_8733B(pbuf, 0);
+		}
+
+		SET_TX_DESC_DISDATAFB_8733B(pbuf, 1);
+		SET_TX_DESC_DISRTSFB_8733B(pbuf, 1);
+
+		SET_TX_DESC_USE_RATE_8733B(pbuf, 1);
+		SET_TX_DESC_DATARATE_8733B(pbuf, MRateToHwRate(pattrib->rate));
+
+		if (pattrib->ldpc) {
+			SET_TX_DESC_DATA_LDPC_8733B(pbuf, 1);
+		}
+		SET_TX_DESC_DATA_STBC_8733B(pbuf, pattrib->stbc & 3);
+		SET_TX_DESC_DATA_BW_8733B(pbuf, pattrib->bwmode);
+
+	}
+	else if (pxmitframe->frame_tag == DATA_FRAMETAG) {
 		u8 drv_userate = 0;
 
 		SET_TX_DESC_MACID_8733B(pbuf, pattrib->mac_id);
@@ -3669,7 +3704,7 @@ void fill_default_txdesc(struct xmit_frame *pxmitframe, u8 *pbuf)
 	 * (3) Use HW Qos SEQ to control the seq num of Ext port non-Qos packets.
 	 * 2010.06.23. Added by tynli.
 	 */
-	if (!pattrib->qos_en) {
+	if ((!pattrib->qos_en) && (pattrib->inject != 0xa5)) {
 		SET_TX_DESC_EN_HWSEQ_8733B(pbuf, 1);
 		SET_TX_DESC_HW_SSN_SEL_8733B(pbuf, pattrib->hw_ssn_sel);
 	}

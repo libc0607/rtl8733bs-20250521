@@ -22,6 +22,10 @@ MODULE_DESCRIPTION("Realtek Wireless Lan Driver");
 MODULE_AUTHOR("Realtek Semiconductor Corp.");
 MODULE_VERSION(DRIVERVERSION);
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
+MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
 #define strlcpy(p, q, s) strscpy(p, q, s)
 #endif
@@ -1890,6 +1894,12 @@ struct net_device *rtw_init_netdev(_adapter *old_padapter)
 
 	if (!pnetdev)
 		return NULL;
+		
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0))
+	pnetdev->min_mtu = WLAN_MIN_ETHFRM_LEN;
+	pnetdev->mtu = WLAN_DATA_MAXLEN;
+	pnetdev->max_mtu = WLAN_DATA_MAXLEN;
+#endif
 
 	padapter = rtw_netdev_priv(pnetdev);
 	padapter->pnetdev = pnetdev;
