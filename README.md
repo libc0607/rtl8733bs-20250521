@@ -16,4 +16,5 @@ Buy from Taobao: [RTL8731BS modules](https://shop73266465.taobao.com/search.htm?
 
 ### Use with OpenIPC
 See [Platform Compatibilities](https://github.com/libc0607/rtl8822cs-20240221?tab=readme-ov-file#platform-compatibilities)  
+The output of `find /sys/bus/sdio/devices/* | xargs -I {} cat {}/uevent | grep "SDIO_ID=" | cut -d= -f2` is `024C:B733`.  
 
